@@ -12,6 +12,8 @@ def download():
     if not ticker:
         return jsonify({"error": "ticker parameter required"}), 400
     data = yf.download(ticker, start=start, end=end)
+    if data is None or data.empty:
+        return jsonify({"error": "No data found for the given parameters"}), 404
     return data.reset_index().to_json(orient="records")
 
 @app.route("/info", methods=["GET"])
