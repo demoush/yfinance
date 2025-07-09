@@ -1,8 +1,11 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import yfinance as yf
 from yfinance.screener.screener import PREDEFINED_SCREENER_QUERIES, screen
+from model.randomforest import predict_recommendation
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 @app.route("/download", methods=["GET"])
 def download():
@@ -51,6 +54,17 @@ def run_screener():
         return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route("/predict", methods=["GET"])
+def predict():
+    ticker = request.args.get("ticker")
+    interval = request.args.get("interval", "1d")
+    if not ticker:
+        return jsonify({"error": "ticker parameter required"}), 400
+    rec = predict_recommendation(ticker, interval)
+    if rec is None:
+        return jsonify({"error": "Could not generate prediction for ticker"}), 404
+    return jsonify({"recommendation": rec, "interval": interval})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
