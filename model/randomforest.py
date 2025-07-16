@@ -86,6 +86,7 @@ def load_or_train_model(interval='1d'):
         return train_model(interval=interval)
 
 def predict_recommendation(ticker, interval='1d'):
+    import numpy as np
     model = load_or_train_model(interval)
     df = fetch_features(ticker, interval)
     if df is None or len(df) == 0:
@@ -93,5 +94,35 @@ def predict_recommendation(ticker, interval='1d'):
     sma_col = [col for col in df.columns if col.startswith('sma_')][0]
     ema_col = [col for col in df.columns if col.startswith('ema_')][0]
     X = df[['Close', 'rsi', 'macd', 'macd_signal', sma_col, ema_col]].tail(1)
-    pred = model.predict(X)[0]
-    return LABELS.get(pred, 'Hold')
+    prediction = model.predict(X)[0] if model is not None else None
+    # Convert prediction to int if it's a numpy type
+    if prediction is not None and hasattr(prediction, 'item'):
+        prediction = prediction.item()
+    elif isinstance(prediction, int):
+        prediction = int(prediction)
+    confidence = None
+    if model is not None and hasattr(model, "predict_proba"):
+        proba = model.predict_proba(X)[0]
+        confidence = float(max(proba))
+    prediction_date = df['Date'].iloc[-1] if 'Date' in df.columns else None
+    model_name = "RandomForest" if model is not None else None
+    # Convert all input features to native Python types
+    def to_serializable(val):
+        if isinstance(val, int):
+            return int(val)
+        if isinstance(val, float):
+            return float(val)
+        return val
+    input_features = {k: to_serializable(v) for k, v in X.iloc[0].to_dict().items()}
+    if prediction is not None and prediction in LABELS:
+        predicted_label = LABELS[prediction]
+    else:
+        predicted_label = 'Hold'
+    return {
+        "predictionDate": prediction_date,
+        "modelName": model_name,
+        "inputFeatures": input_features,
+        "predictedAction": predicted_label,
+        "confidenceScore": confidence,
+        "interval": interval
+    }
