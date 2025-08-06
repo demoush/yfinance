@@ -104,7 +104,6 @@ def predict_recommendation(ticker, interval='1d'):
     if model is not None and hasattr(model, "predict_proba"):
         proba = model.predict_proba(X)[0]
         confidence = float(max(proba))
-    prediction_date = df['Date'].iloc[-1] if 'Date' in df.columns else None
     model_name = "RandomForest" if model is not None else None
     # Convert all input features to native Python types
     def to_serializable(val):
@@ -118,11 +117,13 @@ def predict_recommendation(ticker, interval='1d'):
         predicted_label = LABELS[prediction]
     else:
         predicted_label = 'Hold'
+    from datetime import datetime, timezone
+    timestamp = int(datetime.now(timezone.utc).timestamp() * 1000)
     return {
-        "predictionDate": prediction_date,
         "modelName": model_name,
         "inputFeatures": input_features,
         "predictedAction": predicted_label,
         "confidenceScore": confidence,
-        "interval": interval
+        "interval": interval,
+        "timestamp": timestamp
     }

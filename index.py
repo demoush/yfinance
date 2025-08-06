@@ -1,31 +1,93 @@
+from flask import abort
+from finvizfinance.quote import finvizfinance
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import yfinance as yf
 from yfinance.screener.screener import PREDEFINED_SCREENER_QUERIES, screen
 from model.randomforest import predict_recommendation
 
+# Additional imports for catalyst detection
+
+from bs4 import BeautifulSoup
+import json
+import os
+from datetime import datetime, timedelta, timezone
+
+import requests
+import numpy as np
+
+# Define the cache file for earnings calendar
+CACHE_FILE = "calendar_cache.json"
+
+# Helper function to fetch 8-K filings for a specific ticker
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
-
-@app.route("/download", methods=["GET"])
-def download():
-    ticker = request.args.get("ticker")
-    start = request.args.get("start")
-    end = request.args.get("end")
-    if not ticker:
-        return jsonify({"error": "ticker parameter required"}), 400
-    data = yf.download(ticker, start=start, end=end)
-    if data is None or data.empty:
-        return jsonify({"error": "No data found for the given parameters"}), 404
-    return data.reset_index().to_json(orient="records")
 
 @app.route("/info", methods=["GET"])
 def info():
     ticker = request.args.get("ticker")
+    tickers_param = request.args.get("tickers")
+    if tickers_param:
+        tickers_list = [t.strip() for t in tickers_param.split(",") if t.strip()]
+        infos = []
+        for tkr in tickers_list:
+            try:
+                t = yf.Ticker(tkr)
+                info = t.info
+                cal = t.calendar
+                # Convert DataFrame to list of dicts if needed
+                try:
+                    import pandas as pd
+                    if isinstance(cal, pd.DataFrame):
+                        cal = cal.reset_index().to_dict(orient="records")
+                except ImportError:
+                    pass
+                info["calendar"] = cal
+                # Add news using finvizfinance
+                try:
+                    stock = finvizfinance(tkr.upper())
+                    news_data = stock.ticker_news()
+                    try:
+                        import pandas as pd
+                        if isinstance(news_data, pd.DataFrame):
+                            news_data = news_data.to_dict(orient="records")
+                    except ImportError:
+                        pass
+                    info["news"] = news_data
+                except Exception as e:
+                    info["news"] = {"error": str(e)}
+            except Exception as e:
+                info = {"error": str(e), "calendar": None, "news": None}
+            info["ticker"] = tkr
+            infos.append(info)
+        return jsonify(infos)
     if not ticker:
         return jsonify({"error": "ticker parameter required"}), 400
     t = yf.Ticker(ticker)
-    return jsonify(t.info)
+    info = t.info
+    cal = t.calendar
+    # Convert DataFrame to list of dicts if needed
+    try:
+        import pandas as pd
+        if isinstance(cal, pd.DataFrame):
+            cal = cal.reset_index().to_dict(orient="records")
+    except ImportError:
+        pass
+    info["calendar"] = cal
+    # Add news using finvizfinance
+    try:
+        stock = finvizfinance(ticker.upper())
+        news_data = stock.ticker_news()
+        try:
+            import pandas as pd
+            if isinstance(news_data, pd.DataFrame):
+                news_data = news_data.to_dict(orient="records")
+        except ImportError:
+            pass
+        info["news"] = news_data
+    except Exception as e:
+        info["news"] = {"error": str(e)}
+    return jsonify(info)
 
 @app.route("/history", methods=["GET"])
 def history():
@@ -36,7 +98,41 @@ def history():
         return jsonify({"error": "ticker parameter required"}), 400
     t = yf.Ticker(ticker)
     data = t.history(period=period, interval=interval)
-    return data.reset_index().to_json(orient="records")
+    # Only keep the required columns and rename them
+    compact = []
+    import pandas as pd
+    from datetime import datetime
+    import pandas as pd
+    for idx, row in data.iterrows():
+        if isinstance(idx, (pd.Timestamp, datetime)):
+            date_str = idx.strftime("%Y-%m-%dT%H:%M:%S")
+        else:
+            date_str = str(idx)
+        compact.append({
+            "D": date_str,
+            "O": row["Open"],
+            "H": row["High"],
+            "L": row["Low"],
+            "C": row["Close"],
+            "V": row["Volume"]
+        })
+    chart_link = (
+        f"https://charts2-node.finviz.com/chart.ashx?cs=l"
+        f"&t={ticker.upper()}"
+        f"&tf=d"
+        f"&s=linear"
+        f"&pm=0"
+        f"&am=0"
+        f"&ct=candle_stick"
+        f"&o[0][ot]=sma&o[0][op]=20&o[0][oc]=FF8F33C6"
+        f"&o[1][ot]=sma&o[1][op]=50&o[1][oc]=DCB3326D"
+        f"&o[2][ot]=sma&o[2][op]=200&o[2][oc]=DC32B363"
+        f"&o[3][ot]=patterns&o[3][op]=&o[3][oc]=000"
+    )
+    return jsonify({
+        "history": compact,
+        "chart_link": chart_link
+    })
 
 @app.route("/screener/run", methods=["GET"])
 def run_screener():
@@ -65,6 +161,104 @@ def predict():
     if rec is None:
         return jsonify({"error": "Could not generate prediction for ticker"}), 404
     return jsonify({"recommendation": rec, "interval": interval})
+
+# Calendar endpoint for batch closest earnings
+@app.route("/calendar", methods=["GET"])
+def calendar():
+    lookahead_days = int(request.args.get("nextdays", 30))  # Default 30 days
+    start_offset_days = int(request.args.get("offsetdays", 1))  # Default 0 days offset
+    cache_path = os.path.join(os.path.dirname(__file__), CACHE_FILE)
+    try:
+        print(f"[calendar] Using cache_path: {cache_path}")
+        with open(cache_path, "r") as f:
+            cache = json.load(f)
+        all_results = cache.get("results")
+        if len(all_results) == 0:
+            return jsonify({"results": [], "count": 0, "last_updated": cache.get("last_updated")}), 200
+        now = datetime.now(timezone.utc)
+        ticker_events = {}
+        print(f"[calendar] Found {len(all_results)} cached earnings entries.")
+
+        for entry in all_results:
+            ticker = entry.get("ticker")
+            if not ticker:
+                continue
+            for cal in entry.get("calendar", []):
+                cal_date = cal.get("date")
+                cal_event = cal.get("event")
+                # add description and link if available
+                cal_description = cal.get("description", "")
+                cal_link = cal.get("link", "")
+                if not cal_date or not cal_event:
+                    continue
+                try:
+                    event_date = datetime.fromisoformat(cal_date)
+                except Exception:
+                    continue
+                if event_date >= now - timedelta(days=start_offset_days) and event_date <= now + timedelta(days=lookahead_days):
+                    print(f"[calendar] Including: {ticker} | {cal_event} | {cal_date}")
+                    if ticker not in ticker_events:
+                        ticker_events[ticker] = []
+                    ticker_events[ticker].append({"event": cal_event, "date": cal_date, "description": cal_description, "link": cal_link})
+                else:
+                    print(f"[calendar] Skipping: {ticker} | {cal_event} | {cal_date}")
+
+        # Build results in the requested format
+        results = []
+        for ticker, events in ticker_events.items():
+            results.append({"ticker": ticker, "calendar": events})
+
+        if not results:
+            return jsonify({"results": [], "count": 0, "last_updated": cache.get("last_updated")}), 200
+        # Sort by soonest event date for each ticker
+        results.sort(key=lambda x: min(datetime.fromisoformat(ev["date"]) for ev in x["calendar"]))
+        response_data = {
+            "results": results,
+            "count": len(results),
+            "last_updated": cache.get("last_updated")
+        }
+        return jsonify(response_data), 200
+    except Exception as e:
+        return jsonify({"error": f"Could not read earnings cache: {e}"}), 500
+
+# Add a news endpoint using finvizfinance
+@app.route("/news", methods=["GET"])
+def news():
+    ticker = request.args.get("ticker")
+    if finvizfinance is None:
+        return jsonify({"error": "finvizfinance package not installed"}), 500
+    try:
+        if ticker:
+            stock = finvizfinance(ticker.upper())
+            news_data = stock.ticker_news()
+            # If news_data is a DataFrame, convert to list of dicts
+            try:
+                import pandas as pd
+                if isinstance(news_data, pd.DataFrame):
+                    news_data = news_data.to_dict(orient="records")
+            except ImportError:
+                pass
+            return jsonify({"ticker": ticker.upper(), "news": news_data})
+        else:
+            # General market news
+            from finvizfinance.news import News
+            news = News()
+            news_data = news.get_news()
+            # If news_data is a DataFrame, convert to list of dicts
+            try:
+                import pandas as pd
+                if isinstance(news_data, pd.DataFrame):
+                    news_data = news_data.to_dict(orient="records")
+            except ImportError:
+                pass
+            return jsonify({"news": news_data})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# Catch-all route for debugging 404s
+@app.errorhandler(404)
+def not_found(e):
+    return jsonify({"error": "Not found", "message": str(e), "path": request.path}), 404
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
