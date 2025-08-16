@@ -12,6 +12,7 @@ from bs4 import BeautifulSoup
 import json
 import os
 from datetime import datetime, timedelta, timezone
+from yfinance import Search
 
 import requests
 import numpy as np
@@ -22,6 +23,46 @@ CACHE_FILE = "calendar_cache.json"
 # Helper function to fetch 8-K filings for a specific ticker
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
+
+@app.route("/price", methods=["GET"])
+def price():
+    ticker = request.args.get("ticker")
+    if not ticker:
+        return jsonify({"error": "ticker parameter required"}), 400
+    try:
+        t = yf.Ticker(ticker)
+        price = t.fast_info.last_price
+        volume = t.fast_info.last_volume
+        return jsonify({"ticker": ticker, "price": price, "volume": volume})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/watchlist", methods=["GET"])
+def watchlist():
+    tickers_param = request.args.get("tickers")
+    if not tickers_param:
+        return jsonify({"error": "tickers parameter required"}), 400
+    tickers_list = [t.strip() for t in tickers_param.split(",") if t.strip()]
+    try:
+        combined_query = " ".join(tickers_list)
+        tickers_obj = yf.Tickers(combined_query)
+        # Collect info for each ticker
+        results = []
+        for tkr in tickers_list:
+            try:
+                t = tickers_obj.tickers.get(tkr)
+                if t is None:
+                    results.append({"ticker": tkr, "error": "Not found in batch"})
+                    continue
+                fi = dict(t.info) if hasattr(t.info, 'items') else t.info.__dict__
+                fi["ticker"] = tkr
+                results.append(fi)
+            except Exception as e:
+                results.append({"ticker": tkr, "error": str(e)})
+        creation_ts = int(datetime.now(timezone.utc).timestamp())
+        return jsonify({"canonicalName": "WATCHLIST","count": len(results), "creationDate": creation_ts, "quotes": results})
+    except Exception as e:
+        return jsonify({"error": str(e)})
 
 @app.route("/info", methods=["GET"])
 def info():

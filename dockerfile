@@ -21,9 +21,4 @@ COPY . .
 
 
 # Add cron job to run build_calendar_cache.py at midnight every day
-#RUN echo "0 0 1 * * cd /app && python /app/build_calendar_cache.py >> /var/log/cron.log 2>&1" > /etc/cron.d/calendar-cache
-#RUN chmod 0644 /etc/cron.d/calendar-cache && crontab /etc/cron.d/calendar-cache
-
-# Start cron and Flask app
-#CMD service cron start && python index.py
-CMD python index.py
+CMD ["python", "index.py"]
