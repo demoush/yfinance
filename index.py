@@ -2,6 +2,8 @@ from flask import abort
 from finvizfinance.quote import finvizfinance
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from scrape_xstocks import check_cache
+import scrape_xstocks
 import yfinance as yf
 from yfinance.screener.screener import PREDEFINED_SCREENER_QUERIES, screen
 from model.randomforest import predict_recommendation
@@ -293,6 +295,18 @@ def news():
             except ImportError:
                 pass
             return jsonify({"news": news_data})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/xstocks', methods=["GET"])
+def get_xstocks():
+    try:
+        tokens = check_cache()
+        if not tokens:
+            tokens = scrape_xstocks.scrape_xstocks()
+        if not tokens:
+            return jsonify({"error": "Failed to retrieve xStocks data"}), 500
+        return jsonify({"tokens": tokens})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

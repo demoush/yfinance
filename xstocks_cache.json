@@ -1,0 +1,254 @@
+[
+  {
+    "symbol": "ABTx",
+    "address": "XsHtf5RpxsQ7jeJ9ivNewouZKJHbPxhPoEy6yYvULr7"
+  },
+  {
+    "symbol": "ABBVx",
+    "address": "XswbinNKyPmzTa5CskMbCPvMW6G5CMnZXZEeQSSQoie"
+  },
+  {
+    "symbol": "ACNx",
+    "address": "Xs5UJzmCRQ8DWZjskExdSQDnbE6iLkRu2jjrRAB1JSU"
+  },
+  {
+    "symbol": "GOOGLx",
+    "address": "XsCPL9dNWBMvFtTmwcCA5v3xWPSMEBCszbQdiLLq6aN"
+  },
+  {
+    "symbol": "AMZNx",
+    "address": "Xs3eBt7uRfJX8QUs4suhyU8p2M6DoUDrJyWBa8LLZsg"
+  },
+  {
+    "symbol": "AMBRx",
+    "address": "XsaQTCgebC2KPbf27KUhdv5JFvHhQ4GDAPURwrEhAzb"
+  },
+  {
+    "symbol": "AAPLx",
+    "address": "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp"
+  },
+  {
+    "symbol": "APPx",
+    "address": "XsPdAVBi8Zc1xvv53k4JcMrQaEDTgkGqKYeh7AYgPHV"
+  },
+  {
+    "symbol": "AZNx",
+    "address": "Xs3ZFkPYT2BN7qBMqf1j1bfTeTm1rFzEFSsQ1z3wAKU"
+  },
+  {
+    "symbol": "BACx",
+    "address": "XswsQk4duEQmCbGzfqUUWYmi7pV7xpJ9eEmLHXCaEQP"
+  },
+  {
+    "symbol": "BRK.Bx",
+    "address": "Xs6B6zawENwAbWVi7w92rjazLuAr5Az59qgWKcNb45x"
+  },
+  {
+    "symbol": "AVGOx",
+    "address": "XsgSaSvNSqLTtFuyWPBhK9196Xb9Bbdyjj4fH3cPJGo"
+  },
+  {
+    "symbol": "CVXx",
+    "address": "XsNNMt7WTNA2sV3jrb1NNfNgapxRF5i4i6GcnTRRHts"
+  },
+  {
+    "symbol": "CRCLx",
+    "address": "XsueG8BtpquVJX9LVLLEGuViXUungE6WmK5YZ3p3bd1"
+  },
+  {
+    "symbol": "CSCOx",
+    "address": "Xsr3pdLQyXvDJBFgpR5nexCEZwXvigb8wbPYp4YoNFf"
+  },
+  {
+    "symbol": "KOx",
+    "address": "XsaBXg8dU5cPM6ehmVctMkVqoiRG2ZjMo1cyBJ3AykQ"
+  },
+  {
+    "symbol": "COINx",
+    "address": "Xs7ZdzSHLU9ftNJsii5fCeJhoRWSC32SQGzGQtePxNu"
+  },
+  {
+    "symbol": "CMCSAx",
+    "address": "XsvKCaNsxg2GN8jjUmq71qukMJr7Q1c5R2Mk9P8kcS8"
+  },
+  {
+    "symbol": "CRWDx",
+    "address": "Xs7xXqkcK7K8urEqGg52SECi79dRp2cEKKuYjUePYDw"
+  },
+  {
+    "symbol": "DHRx",
+    "address": "Xseo8tgCZfkHxWS9xbFYeKFyMSbWEvZGFV1Gh53GtCV"
+  },
+  {
+    "symbol": "DFDVx",
+    "address": "Xs2yquAgsHByNzx68WJC55WHjHBvG9JsMB7CWjTLyPy"
+  },
+  {
+    "symbol": "LLYx",
+    "address": "Xsnuv4omNoHozR6EEW5mXkw8Nrny5rB3jVfLqi6gKMH"
+  },
+  {
+    "symbol": "XOMx",
+    "address": "XsaHND8sHyfMfsWPj6kSdd5VwvCayZvjYgKmmcNL5qh"
+  },
+  {
+    "symbol": "GMEx",
+    "address": "Xsf9mBktVB9BSU5kf4nHxPq5hCBJ2j2ui3ecFGxPRGc"
+  },
+  {
+    "symbol": "GLDx",
+    "address": "Xsv9hRk1z5ystj9MhnA7Lq4vjSsLwzL2nxrwmwtD3re"
+  },
+  {
+    "symbol": "GSx",
+    "address": "XsgaUyp4jd1fNBCxgtTKkW64xnnhQcvgaxzsbAq5ZD1"
+  },
+  {
+    "symbol": "HDx",
+    "address": "XszjVtyhowGjSC5odCqBpW1CtXXwXjYokymrk7fGKD3"
+  },
+  {
+    "symbol": "HONx",
+    "address": "XsRbLZthfABAPAfumWNEJhPyiKDW6TvDVeAeW7oKqA2"
+  },
+  {
+    "symbol": "INTCx",
+    "address": "XshPgPdXFRWB8tP1j82rebb2Q9rPgGX37RuqzohmArM"
+  },
+  {
+    "symbol": "IBMx",
+    "address": "XspwhyYPdWVM8XBHZnpS9hgyag9MKjLRyE3tVfmCbSr"
+  },
+  {
+    "symbol": "JNJx",
+    "address": "XsGVi5eo1Dh2zUpic4qACcjuWGjNv8GCt3dm5XcX6Dn"
+  },
+  {
+    "symbol": "JPMx",
+    "address": "XsMAqkcKsUewDrzVkait4e5u4y8REgtyS7jWgCpLV2C"
+  },
+  {
+    "symbol": "LINx",
+    "address": "XsSr8anD1hkvNMu8XQiVcmiaTP7XGvYu7Q58LdmtE8Z"
+  },
+  {
+    "symbol": "MRVLx",
+    "address": "XsuxRGDzbLjnJ72v74b7p9VY6N66uYgTCyfwwRjVCJA"
+  },
+  {
+    "symbol": "MAx",
+    "address": "XsApJFV9MAktqnAc6jqzsHVujxkGm9xcSUffaBoYLKC"
+  },
+  {
+    "symbol": "MCDx",
+    "address": "XsqE9cRRpzxcGKDXj1BJ7Xmg4GRhZoyY1KpmGSxAWT2"
+  },
+  {
+    "symbol": "MDTx",
+    "address": "XsDgw22qRLTv5Uwuzn6T63cW69exG41T6gwQhEK22u2"
+  },
+  {
+    "symbol": "MRKx",
+    "address": "XsnQnU7AdbRZYe2akqqpibDdXjkieGFfSkbkjX1Sd1X"
+  },
+  {
+    "symbol": "METAx",
+    "address": "Xsa62P5mvPszXL1krVUnU5ar38bBSVcWAB6fmPCo5Zu"
+  },
+  {
+    "symbol": "MSFTx",
+    "address": "XspzcW1PRtgf6Wj92HCiZdjzKCyFekVD8P5Ueh3dRMX"
+  },
+  {
+    "symbol": "MSTRx",
+    "address": "XsP7xzNPvEHS1m6qfanPUGjNmdnmsLKEoNAnHjdxxyZ"
+  },
+  {
+    "symbol": "QQQx",
+    "address": "Xs8S1uUs1zvS2p7iwtsG3b6fkhpvmwz4GYU3gWAmWHZ"
+  },
+  {
+    "symbol": "NFLXx",
+    "address": "XsEH7wWfJJu2ZT3UCFeVfALnVA6CP5ur7Ee11KmzVpL"
+  },
+  {
+    "symbol": "NVOx",
+    "address": "XsfAzPzYrYjd4Dpa9BU3cusBsvWfVB9gBcyGC87S57n"
+  },
+  {
+    "symbol": "NVDAx",
+    "address": "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh"
+  },
+  {
+    "symbol": "OPENx",
+    "address": "XsGtpmjhmC8kyjVSWL4VicGu36ceq9u55PTgF8bhGv6"
+  },
+  {
+    "symbol": "ORCLx",
+    "address": "XsjFwUPiLofddX5cWFHW35GCbXcSu1BCUGfxoQAQjeL"
+  },
+  {
+    "symbol": "PLTRx",
+    "address": "XsoBhf2ufR8fTyNSjqfU71DYGaE6Z3SUGAidpzriAA4"
+  },
+  {
+    "symbol": "PEPx",
+    "address": "Xsv99frTRUeornyvCfvhnDesQDWuvns1M852Pez91vF"
+  },
+  {
+    "symbol": "PFEx",
+    "address": "XsAtbqkAP1HJxy7hFDeq7ok6yM43DQ9mQ1Rh861X8rw"
+  },
+  {
+    "symbol": "PMx",
+    "address": "Xsba6tUnSjDae2VcopDB6FGGDaxRrewFCDa5hKn5vT3"
+  },
+  {
+    "symbol": "PGx",
+    "address": "XsYdjDjNUygZ7yGKfQaB6TxLh2gC6RRjzLtLAGJrhzV"
+  },
+  {
+    "symbol": "HOODx",
+    "address": "XsvNBAYkrDRNhA7wPHQfX3ZUXZyZLdnCQDfHZ56bzpg"
+  },
+  {
+    "symbol": "CRMx",
+    "address": "XsczbcQ3zfcgAEt9qHQES8pxKAVG5rujPSHQEXi4kaN"
+  },
+  {
+    "symbol": "SPYx",
+    "address": "XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W"
+  },
+  {
+    "symbol": "TBLLx",
+    "address": "XsqBC5tcVQLYt8wqGCHRnAUUecbRYXoJCReD6w7QEKp"
+  },
+  {
+    "symbol": "TSLAx",
+    "address": "XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB"
+  },
+  {
+    "symbol": "TMOx",
+    "address": "Xs8drBWy3Sd5QY3aifG9kt9KFs2K3PGZmx7jWrsrk57"
+  },
+  {
+    "symbol": "TQQQx",
+    "address": "XsjQP3iMAaQ3kQScQKthQpx9ALRbjKAjQtHg6TFomoc"
+  },
+  {
+    "symbol": "UNHx",
+    "address": "XszvaiXGPwvk2nwb3o9C1CX4K6zH8sez11E6uyup6fe"
+  },
+  {
+    "symbol": "VTIx",
+    "address": "XsssYEQjzxBCFgvYFFNuhJFBeHNdLWYeUSP8F45cDr9"
+  },
+  {
+    "symbol": "Vx",
+    "address": "XsqgsbXwWogGJsNcVZ3TyVouy2MbTkfCFhCGGGcQZ2p"
+  },
+  {
+    "symbol": "WMTx",
+    "address": "Xs151QeqTCiuKtinzfRATnUESM2xTU6V9Wy8Vy538ci"
+  }
+]
