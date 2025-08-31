@@ -2,6 +2,7 @@ import curl_cffi
 from typing import Union
 import warnings
 
+
 from yfinance.const import _QUERY1_URL_, _SENTINEL_
 from yfinance.data import YfData
 from ..utils import dynamic_docstring, generate_list_table_from_dict_universal
@@ -9,6 +10,15 @@ from ..utils import dynamic_docstring, generate_list_table_from_dict_universal
 from .query import EquityQuery as EqyQy
 from .query import FundQuery as FndQy
 from .query import QueryBase, EquityQuery, FundQuery
+
+# For xstock check
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
+try:
+    from scrape_xstocks import check_cache
+except ImportError:
+    check_cache = None
 
 _SCREENER_URL_ = f"{_QUERY1_URL_}/v1/finance/screener"
 _PREDEFINED_URL_ = f"{_SCREENER_URL_}/predefined/saved"
@@ -174,7 +184,20 @@ def screen(query: Union[str, EquityQuery, FundQuery],
             if query not in PREDEFINED_SCREENER_QUERIES:
                 print(f"yfinance.screen: '{query}' is probably not a predefined query.")
             raise
-        return resp.json()["finance"]["result"][0]
+        result = resp.json()["finance"]["result"][0]
+
+        
+        # Add xstock property to each symbol in quotes
+        if check_cache is not None:
+            xstock_tokens = check_cache() or []
+            xstock_set = set(t['symbol'] for t in xstock_tokens if 'symbol' in t)
+        else:
+            xstock_set = set()
+        if 'quotes' in result and isinstance(result['quotes'], list):
+            for q in result['quotes']:
+                symbol_x = q.get('symbol', '') + 'x'
+                q['xstock'] = symbol_x in xstock_set
+        return result
 
     elif isinstance(query, QueryBase):
         # Prepare other fields

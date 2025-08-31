@@ -48,19 +48,26 @@ def watchlist():
     try:
         combined_query = " ".join(tickers_list)
         tickers_obj = yf.Tickers(combined_query)
+        # Load xstocks cache
+        try:
+            xstock_tokens = check_cache() or []
+            xstock_set = set(t['symbol'] for t in xstock_tokens if 'symbol' in t)
+        except Exception:
+            xstock_set = set()
         # Collect info for each ticker
         results = []
         for tkr in tickers_list:
             try:
                 t = tickers_obj.tickers.get(tkr)
                 if t is None:
-                    results.append({"ticker": tkr, "error": "Not found in batch"})
+                    results.append({"ticker": tkr, "error": "Not found in batch", "xstock": False})
                     continue
                 fi = dict(t.info) if hasattr(t.info, 'items') else t.info.__dict__
                 fi["ticker"] = tkr
+                fi["xstock"] = (tkr + 'x') in xstock_set
                 results.append(fi)
             except Exception as e:
-                results.append({"ticker": tkr, "error": str(e)})
+                results.append({"ticker": tkr, "error": str(e), "xstock": False})
         creation_ts = int(datetime.now(timezone.utc).timestamp())
         return jsonify({"canonicalName": "WATCHLIST","count": len(results), "creationDate": creation_ts, "quotes": results})
     except Exception as e:
@@ -72,6 +79,12 @@ def info():
     tickers_param = request.args.get("tickers")
     if tickers_param:
         tickers_list = [t.strip() for t in tickers_param.split(",") if t.strip()]
+        # Load xstocks cache
+        try:
+            xstock_tokens = check_cache() or []
+            xstock_set = set(t['symbol'] for t in xstock_tokens if 'symbol' in t)
+        except Exception:
+            xstock_set = set()
         infos = []
         for tkr in tickers_list:
             try:
@@ -102,10 +115,17 @@ def info():
             except Exception as e:
                 info = {"error": str(e), "calendar": None, "news": None}
             info["ticker"] = tkr
+            info["xstock"] = (tkr + 'x') in xstock_set
             infos.append(info)
         return jsonify(infos)
     if not ticker:
         return jsonify({"error": "ticker parameter required"}), 400
+    # Load xstocks cache
+    try:
+        xstock_tokens = check_cache() or []
+        xstock_set = set(t['symbol'] for t in xstock_tokens if 'symbol' in t)
+    except Exception:
+        xstock_set = set()
     t = yf.Ticker(ticker)
     info = t.info
     cal = t.calendar
@@ -130,6 +150,7 @@ def info():
         info["news"] = news_data
     except Exception as e:
         info["news"] = {"error": str(e)}
+    info["xstock"] = (ticker + 'x') in xstock_set
     return jsonify(info)
 
 @app.route("/history", methods=["GET"])
