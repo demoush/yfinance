@@ -322,11 +322,15 @@ def news():
 @app.route('/xstocks', methods=["GET"])
 def get_xstocks():
     try:
+        symbol_query = request.args.get("symbol")
         tokens = check_cache()
         if not tokens:
             tokens = scrape_xstocks.scrape_xstocks()
         if not tokens:
             return jsonify({"error": "Failed to retrieve xStocks data"}), 500
+        if symbol_query:
+            filtered = [t for t in tokens if t.get("symbol", "").lower() == symbol_query.lower()]
+            return jsonify({"tokens": filtered})
         return jsonify({"tokens": tokens})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
