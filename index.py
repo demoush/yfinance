@@ -158,10 +158,14 @@ def history():
     ticker = request.args.get("ticker")
     period = request.args.get("period", "1mo")
     interval = request.args.get("interval", "1d")
+    start = request.args.get("start")
+    if not start:
+        start = None
+    
     if not ticker:
         return jsonify({"error": "ticker parameter required"}), 400
     t = yf.Ticker(ticker)
-    data = t.history(period=period, interval=interval)
+    data = t.history(period=period, interval=interval, start=start)
     # Only keep the required columns and rename them
     compact = []
     import pandas as pd
