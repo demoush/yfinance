@@ -165,30 +165,48 @@ def history():
     if not ticker:
         return jsonify({"error": "ticker parameter required"}), 400
     t = yf.Ticker(ticker)
-    data = t.history(period=period, interval=interval, start=start)
+    data = t.history(period=period, interval=interval)
     # Calculate momentum and add to DataFrame
     if "Close" in data.columns and len(data) > lookback:
         m = data["Close"] / data["Close"].shift(lookback) - 1
         data["M"] = m.fillna(0.0).round(4)
     else:
         data["M"] = 0.0
-        
     # Only keep the required columns and rename them
     compact = []
     import pandas as pd
     from datetime import datetime
     import pandas as pd
     for idx, row in data.iterrows():
+        if start:
+            start_dt = pd.to_datetime(start)
+            # Ensure both idx and start_dt are tz-naive for comparison
+            if hasattr(idx, 'tzinfo') and idx.tzinfo is not None:
+                idx_compare = idx.tz_convert(None)
+            else:
+                idx_compare = idx
+            if start_dt.tzinfo is not None:
+                start_dt_compare = start_dt.tz_convert(None)
+            else:
+                start_dt_compare = start_dt
+            if idx_compare < start_dt_compare:
+                continue
         if isinstance(idx, (pd.Timestamp, datetime)):
             date_str = idx.strftime("%Y-%m-%dT%H:%M:%S")
+            ts_val = int(idx.timestamp())
         else:
             date_str = str(idx)
+            try:
+                ts_val = int(datetime.strptime(str(idx), "%Y-%m-%d %H:%M:%S").timestamp())
+            except Exception:
+                ts_val = None
         compact.append({
+            "T": ts_val,
             "D": date_str,
-            "O": row["Open"],
-            "H": row["High"],
-            "L": row["Low"],
-            "C": row["Close"],
+            "O": row["Open"].round(6),
+            "H": row["High"].round(6),
+            "L": row["Low"].round(6),
+            "C": row["Close"].round(6),
             "V": row["Volume"],
             "M": row["M"],
         })
