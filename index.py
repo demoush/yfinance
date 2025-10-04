@@ -353,6 +353,9 @@ def news():
 def get_xstocks():
     try:
         symbol_query = request.args.get("symbol")
+        if symbol_query and not symbol_query.lower().endswith('x'):
+            symbol_query = symbol_query + 'x'
+            
         tokens = check_cache()
         if not tokens:
             tokens = scrape_xstocks.scrape_xstocks()
