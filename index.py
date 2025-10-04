@@ -161,11 +161,18 @@ def history():
     start = request.args.get("start")
     if not start:
         start = None
-    
+    lookback = request.args.get("lookback", 20, type=int)
     if not ticker:
         return jsonify({"error": "ticker parameter required"}), 400
     t = yf.Ticker(ticker)
     data = t.history(period=period, interval=interval, start=start)
+    # Calculate momentum and add to DataFrame
+    if "Close" in data.columns and len(data) > lookback:
+        m = data["Close"] / data["Close"].shift(lookback) - 1
+        data["M"] = m.fillna(0.0).round(4)
+    else:
+        data["M"] = 0.0
+        
     # Only keep the required columns and rename them
     compact = []
     import pandas as pd
@@ -182,7 +189,8 @@ def history():
             "H": row["High"],
             "L": row["Low"],
             "C": row["Close"],
-            "V": row["Volume"]
+            "V": row["Volume"],
+            "M": row["M"],
         })
     chart_link = (
         f"https://charts2-node.finviz.com/chart.ashx?cs=l"
