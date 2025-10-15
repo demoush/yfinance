@@ -55,10 +55,15 @@ def scrape_xstocks():
                     # Adjust path based on actual JSON structure (hypothetical)
                     products = data.get('props', {}).get('pageProps', {}).get('products', [])
                     for product in products:
-                        symbol = product.get('symbol')
+                        ticker = product.get('symbol')
+                        # Remove trailing 'x' if present before converting to uppercase
+                        if ticker and ticker.lower().endswith('x'):
+                            symbol = ticker[:-1].upper()
+                        else:
+                            symbol = ticker.upper() if ticker else None
                         address = product.get('mintAddress')  # Adjust key name if different
                         if symbol and address:
-                            tokens.append({"symbol": symbol, "address": address})
+                            tokens.append({"symbol": symbol.upper(), "ticker": ticker, "address": address})
                     if tokens:
                         print("Extracted tokens from __NEXT_DATA__")
                 except json.JSONDecodeError as e:
@@ -71,9 +76,14 @@ def scrape_xstocks():
                 rows = selector.css('tr[id]')
                 for row in rows:
                     # Prefer the tr id as the symbol (example: id="ABTx"). Fall back to h2 text.
-                    symbol = row.attrib.get('id') or row.css('h2::text').get()
-                    if symbol:
-                        symbol = symbol.strip()
+                    ticker = row.attrib.get('id') or row.css('h2::text').get()
+                    if ticker:
+                        ticker = ticker.strip()
+
+                    if ticker and ticker.lower().endswith('x'):
+                        symbol = ticker[:-1].upper()
+                    else:
+                        symbol = ticker.upper() if ticker else None
 
                     # Look for solscan token links inside the row and extract the token address from the href
                     href = row.css('div.TableRow_address__TerfE a::attr(href)').get() or row.css('a::attr(href)').get()
@@ -89,7 +99,7 @@ def scrape_xstocks():
                             address = href.strip()
 
                     if symbol and address:
-                        tokens.append({"symbol": symbol, "address": address})
+                        tokens.append({"symbol": symbol, "ticker": ticker, "address": address})
 
             if not tokens:
                 print("No tokens extracted from DOM or __NEXT_DATA__")

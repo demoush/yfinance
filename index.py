@@ -159,8 +159,11 @@ def history():
     period = request.args.get("period", "1mo")
     interval = request.args.get("interval", "1d")
     start = request.args.get("start")
+    end = request.args.get("end")
     if not start:
         start = None
+    if not end:
+        end = None
     lookback = request.args.get("lookback", 20, type=int)
     if not ticker:
         return jsonify({"error": "ticker parameter required"}), 400
@@ -178,9 +181,9 @@ def history():
     from datetime import datetime
     import pandas as pd
     for idx, row in data.iterrows():
+        # Filter by start date if provided
         if start:
             start_dt = pd.to_datetime(start)
-            # Ensure both idx and start_dt are tz-naive for comparison
             if hasattr(idx, 'tzinfo') and idx.tzinfo is not None:
                 idx_compare = idx.tz_convert(None)
             else:
@@ -190,6 +193,19 @@ def history():
             else:
                 start_dt_compare = start_dt
             if idx_compare < start_dt_compare:
+                continue
+        # Filter by end date if provided
+        if end:
+            end_dt = pd.to_datetime(end)
+            if hasattr(idx, 'tzinfo') and idx.tzinfo is not None:
+                idx_compare = idx.tz_convert(None)
+            else:
+                idx_compare = idx
+            if end_dt.tzinfo is not None:
+                end_dt_compare = end_dt.tz_convert(None)
+            else:
+                end_dt_compare = end_dt
+            if idx_compare > end_dt_compare:
                 continue
         if isinstance(idx, (pd.Timestamp, datetime)):
             date_str = idx.strftime("%Y-%m-%dT%H:%M:%S")
@@ -362,7 +378,11 @@ def get_xstocks():
         if not tokens:
             return jsonify({"error": "Failed to retrieve xStocks data"}), 500
         if symbol_query:
-            filtered = [t for t in tokens if t.get("symbol", "").lower() == symbol_query.lower()]
+            filtered = [
+                t for t in tokens
+                if t.get("symbol", "").lower() == symbol_query.lower()
+                or t.get("ticker", "").lower() == symbol_query.lower()
+            ]
             return jsonify({"tokens": filtered})
         return jsonify({"tokens": tokens})
     except Exception as e:
